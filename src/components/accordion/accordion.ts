@@ -1,3 +1,5 @@
+import { renderAccordionModal } from "./accordion-modal.ts";
+
 type AccordionItem = {
   title: string;
   content: string;
@@ -24,6 +26,18 @@ type AccordionItem = {
 function decorateAccordion(accordion: HTMLElement) {
   const [header, ...list] = accordion.querySelectorAll("& > div");
   header.setAttribute("class", "accordion-main-title-block");
+
+  const contactUsHeader = header.querySelector("div:last-child");
+
+  if (contactUsHeader) {
+    contactUsHeader.textContent = "Contact Us";
+    contactUsHeader.setAttribute("class", "contact-us-button");
+    contactUsHeader.role = "button";
+    contactUsHeader.addEventListener("click", () => {
+      renderAccordionModal();
+    });
+    header.appendChild(contactUsHeader);
+  }
 
   const listItems = Array.from(list);
   const ITEMS_PER_LOAD = 4;
