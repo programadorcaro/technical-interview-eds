@@ -5,24 +5,6 @@ type AccordionItem = {
   content: string;
 };
 
-// ## Challenge Requirements
-
-// ### 2. Modal Integration
-// - Located at `src/components/accordion/accordion-modal.ts`
-// - Open the accordion modal when clicking on the contact us button, you have free reign for where to add the button
-// - Add validation to the form. First name, last name, and email should be required
-// - Display clear and user-friendly error messages
-
-// ## Stretch Goals
-// If time permits, consider implementing these additional features:
-
-// ### Accessibility Enhancements
-// - Add keyboard navigation support
-// - Implement ARIA attributes and roles
-// - Add proper focus management
-// - Ensure screen reader compatibility
-// - Add appropriate aria-labels and descriptions
-
 function decorateAccordion(accordion: HTMLElement) {
   const [header, ...list] = accordion.querySelectorAll("& > div");
   header.setAttribute("class", "accordion-main-title-block");
@@ -33,8 +15,17 @@ function decorateAccordion(accordion: HTMLElement) {
     contactUsHeader.textContent = "Contact Us";
     contactUsHeader.setAttribute("class", "contact-us-button");
     contactUsHeader.role = "button";
+    contactUsHeader.setAttribute("tabindex", "0");
+    contactUsHeader.setAttribute("aria-label", "Open contact us form");
     contactUsHeader.addEventListener("click", () => {
       renderAccordionModal();
+    });
+    contactUsHeader.addEventListener("keydown", (e: Event) => {
+      const keyEvent = e as KeyboardEvent;
+      if (keyEvent.key === "Enter" || keyEvent.key === " ") {
+        e.preventDefault();
+        renderAccordionModal();
+      }
     });
     header.appendChild(contactUsHeader);
   }
@@ -59,22 +50,110 @@ function decorateAccordion(accordion: HTMLElement) {
 
       if (content) {
         content.setAttribute("class", "accordion-content");
+        content.setAttribute("aria-hidden", "true");
       }
 
       if (!header) continue;
       header.setAttribute("class", "accordion-header");
+      header.setAttribute("role", "button");
+      header.setAttribute("tabindex", "0");
+      header.setAttribute("aria-expanded", "false");
+      header.setAttribute(
+        "aria-controls",
+        `accordion-content-${Math.random().toString(36).substr(2, 9)}`
+      );
 
       // Create and append chevron image
       const chevron = document.createElement("img");
       chevron.src = "../../images/chevron-down-black.svg";
       chevron.alt = "Toggle accordion";
       chevron.className = "accordion-chevron";
+      chevron.setAttribute("aria-hidden", "true");
       header.appendChild(chevron);
 
-      item.addEventListener("click", () => {
-        console.log("clicked");
+      // Add unique ID to content for aria-controls
+      if (content) {
+        const contentId = header.getAttribute("aria-controls");
+        if (contentId) {
+          content.setAttribute("id", contentId);
+        }
+      }
+
+      const toggleAccordion = () => {
         const isOpen = header.getAttribute("data-open") === "true";
-        header.setAttribute("data-open", isOpen ? "false" : "true");
+        const newState = !isOpen;
+
+        header.setAttribute("data-open", newState.toString());
+        header.setAttribute("aria-expanded", newState.toString());
+
+        if (content) {
+          content.setAttribute("aria-hidden", (!newState).toString());
+        }
+
+        // Announce state change to screen readers
+        const announcement = document.createElement("div");
+        announcement.setAttribute("aria-live", "polite");
+        announcement.setAttribute("aria-atomic", "true");
+        announcement.style.position = "absolute";
+        announcement.style.left = "-10000px";
+        announcement.style.width = "1px";
+        announcement.style.height = "1px";
+        announcement.style.overflow = "hidden";
+        announcement.textContent = `Accordion ${
+          newState ? "expanded" : "collapsed"
+        }`;
+        document.body.appendChild(announcement);
+
+        setTimeout(() => {
+          document.body.removeChild(announcement);
+        }, 100);
+      };
+
+      item.addEventListener("click", toggleAccordion);
+
+      // Keyboard navigation
+      header.addEventListener("keydown", (e: Event) => {
+        const keyEvent = e as KeyboardEvent;
+        switch (keyEvent.key) {
+          case "Enter":
+          case " ":
+            e.preventDefault();
+            toggleAccordion();
+            break;
+          case "ArrowDown":
+            e.preventDefault();
+            const nextItem = item.nextElementSibling;
+            if (nextItem && nextItem.classList.contains("accordion-item")) {
+              const nextHeader = nextItem.querySelector(
+                ".accordion-header"
+              ) as HTMLElement;
+              nextHeader?.focus();
+            }
+            break;
+          case "ArrowUp":
+            e.preventDefault();
+            const prevItem = item.previousElementSibling;
+            if (prevItem && prevItem.classList.contains("accordion-item")) {
+              const prevHeader = prevItem.querySelector(
+                ".accordion-header"
+              ) as HTMLElement;
+              prevHeader?.focus();
+            }
+            break;
+          case "Home":
+            e.preventDefault();
+            const firstHeader = accordion.querySelector(
+              ".accordion-header"
+            ) as HTMLElement;
+            firstHeader?.focus();
+            break;
+          case "End":
+            e.preventDefault();
+            const headers = accordion.querySelectorAll(".accordion-header");
+            const lastHeader = headers[headers.length - 1] as HTMLElement;
+            lastHeader?.focus();
+            break;
+        }
       });
     }
   }
@@ -86,6 +165,13 @@ function decorateAccordion(accordion: HTMLElement) {
   const loadMoreButton = document.createElement("button");
   loadMoreButton.textContent = "Load More";
   loadMoreButton.className = "load-more-button";
+  loadMoreButton.setAttribute(
+    "aria-label",
+    `Load ${Math.min(
+      ITEMS_PER_LOAD,
+      listItems.length - ITEMS_PER_LOAD
+    )} more accordion items`
+  );
 
   // Load More functionality
   loadMoreButton.addEventListener("click", () => {
@@ -104,10 +190,38 @@ function decorateAccordion(accordion: HTMLElement) {
 
       currentlyVisible += ITEMS_PER_LOAD;
 
+      // Update button label
+      const remainingItems = listItems.length - currentlyVisible;
+      if (remainingItems > 0) {
+        loadMoreButton.setAttribute(
+          "aria-label",
+          `Load ${Math.min(
+            ITEMS_PER_LOAD,
+            remainingItems
+          )} more accordion items`
+        );
+      }
+
       // Hide button if all items are loaded
       if (currentlyVisible >= listItems.length) {
         loadMoreButton.style.display = "none";
       }
+
+      // Announce to screen readers
+      const announcement = document.createElement("div");
+      announcement.setAttribute("aria-live", "polite");
+      announcement.setAttribute("aria-atomic", "true");
+      announcement.style.position = "absolute";
+      announcement.style.left = "-10000px";
+      announcement.style.width = "1px";
+      announcement.style.height = "1px";
+      announcement.style.overflow = "hidden";
+      announcement.textContent = `Loaded ${nextItems.length} more items`;
+      document.body.appendChild(announcement);
+
+      setTimeout(() => {
+        document.body.removeChild(announcement);
+      }, 100);
     }
   });
 
@@ -123,5 +237,10 @@ function decorateAccordion(accordion: HTMLElement) {
 window.addEventListener("DOMContentLoaded", () => {
   const accordion = document.querySelector<HTMLElement>(".accordion");
   if (!accordion) return;
+
+  // Set up accordion container with proper ARIA attributes
+  accordion.setAttribute("role", "region");
+  accordion.setAttribute("aria-label", "Accordion navigation");
+
   decorateAccordion(accordion);
 });
