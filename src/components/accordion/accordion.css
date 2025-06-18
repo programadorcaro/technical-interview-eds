@@ -9,10 +9,12 @@ body {
 }
 
 .accordion .accordion-header {
-  color: blue;
+  color: navy;
+  font-weight: 500;
   position: relative;
   min-height: 20px;
   padding: 8px 6px;
+  padding-right: 24px;
 
   &:hover {
     background-color: #00000010;
@@ -42,7 +44,7 @@ body {
 
 .accordion .accordion-content {
   display: none;
-  margin-top: 16px;
+  margin-top: 8px;
   color: #333;
   line-height: 1.5;
   padding: 0px 6px;
@@ -78,7 +80,6 @@ body {
   .accordion > div:not(:first-child) {
     border-bottom: 1px solid #33333320;
     padding-bottom: 16px;
-    margin-bottom: 48px;
   }
 }
 
