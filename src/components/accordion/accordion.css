@@ -1,3 +1,99 @@
+body {
+  background-color: rgb(200, 200, 200);
+}
+
 .accordion {
-    
+  padding: 16px;
+  background-color: rgb(255, 255, 255);
+  border-radius: 8px;
+}
+
+.accordion .accordion-header {
+  color: blue;
+  position: relative;
+  min-height: 20px;
+  padding: 8px 6px;
+
+  &:hover {
+    background-color: #00000010;
+  }
+}
+
+.accordion .accordion-item {
+  cursor: pointer;
+}
+
+.accordion .accordion-chevron {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+.accordion .accordion-header[data-open="true"] .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.accordion > div:not(:first-child) {
+  margin-bottom: 28px;
+}
+
+.accordion .accordion-content {
+  display: none;
+  margin-top: 16px;
+  color: #333;
+  line-height: 1.5;
+  padding: 0px 6px;
+}
+
+.accordion .accordion-main-title-block {
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  & h2 {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  & div:not(:first-child) h2 {
+    font-weight: 400;
+    font-size: 20px;
+    color: #777;
+  }
+}
+
+.accordion .accordion-header[data-open="true"] + .accordion-content {
+  display: block;
+}
+
+@media screen and (min-width: 640px) {
+  .accordion {
+    padding: 64px;
+  }
+
+  .accordion > div:not(:first-child) {
+    border-bottom: 1px solid #33333320;
+    padding-bottom: 16px;
+    margin-bottom: 48px;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .accordion {
+    display: grid;
+    grid-template-columns: 3fr 9fr;
+  }
+
+  .accordion .accordion-main-title-block {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .accordion > div:not(:first-child) {
+    grid-column: 2;
+  }
 }
